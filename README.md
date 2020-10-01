@@ -11,26 +11,16 @@ This requires you to sign up on their website in order to receive a free API key
 |---|---|
 | `weather_cloudiness_percent` | Cloud cover in percentage |
 | `weather_feelslike_celsius` | Current temperature taking human perception into account, in celsius |
-| `weather_feelslike_fahrenheit` | Current temperature taking human perception into account, in fahrenheit |
-| `weather_feelslike_kelvin` | Current temperature taking human perception into account, in kelvin |
 | `weather_humidity_percent` | Humidity in percent |
-| `weather_maxtemperature_celsius` | Current maximum temperature in celsius |
-| `weather_maxtemperature_fahrenheit` | Current maximum temperature in fahrenheit |
-| `weather_maxtemperature_kelvin` | Current maximum temperature in kelvin |
-| `weather_mintemperature_celsius` | Current minimum temperature in celsius |
-| `weather_mintemperature_fahrenheit` | Current minimum temperature in fahrenheit |
-| `weather_mintemperature_kelvin` | Current minimum temperature in kelvin |
 | `weather_pressure_hpa` | Atmospheric pressure in hectopascal |
-| `weather_sunrise` | Sunrise time as a UNIX timestamp |
-| `weather_sunset` | Sunset time as a UNIX timestamp |
+| `weather_sunrise_timestamp` | Sunrise time as a UNIX timestamp |
+| `weather_sunset_timestamp` | Sunset time as a UNIX timestamp |
 | `weather_temperature_celsius` | Current temperature in celsius |
-| `weather_temperature_fahrenheit` | Current temperature in fahrenheit |
-| `weather_temperature_kelvin` | Current temperature in kelvin |
+| `weather_temperature_max_celsius` | Current maximum temperature in celsius |
+| `weather_temperature_min_celsius` | Current minimum temperature in celsius |
 | `weather_up` | Whether the metrics can be collected |
 | `weather_visibility_meters` | Visibility in meters |
-| `weather_visibility_miles` | Visibility in miles |
-| `weather_winddirection` | Wind direction in degrees |
-| `weather_windspeed_mph` | Wind speed in miles per hour |
+| `weather_winddirection_degrees` | Wind direction in degrees |
 | `weather_windspeed_mps` | Wind speed in meters per second |
 
 All metrics with the exception of `weather_up` has the following labels with information about the location the metric is reported for:

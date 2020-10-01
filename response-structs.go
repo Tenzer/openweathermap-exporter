@@ -16,7 +16,7 @@ type location struct {
 }
 
 type clouds struct {
-	CoverPercentage float64 `json:"all"`
+	Cover float64 `json:"all"`
 }
 
 type coordinates struct {
@@ -25,12 +25,12 @@ type coordinates struct {
 }
 
 type mainStruct struct {
-	FeelsLikeKelvin      float64 `json:"feels_like"`
-	HumidityPercent      float64 `json:"humidity"`
-	PressureHpa          float64 `json:"pressure"`
-	TemperatureKelvin    float64 `json:"temp"`
-	TemperatureMaxKelvin float64 `json:"temp_max"`
-	TemperatureMinKelvin float64 `json:"temp_min"`
+	FeelsLike      float64 `json:"feels_like"`
+	Humidity       float64 `json:"humidity"`
+	Pressure       float64 `json:"pressure"`
+	Temperature    float64 `json:"temp"`
+	TemperatureMax float64 `json:"temp_max"`
+	TemperatureMin float64 `json:"temp_min"`
 }
 
 type sys struct {
@@ -40,6 +40,6 @@ type sys struct {
 }
 
 type wind struct {
-	DirectionDegrees float64 `json:"deg"`
-	SpeedMps         float64 `json:"speed"`
+	Direction float64 `json:"deg"`
+	Speed     float64 `json:"speed"`
 }

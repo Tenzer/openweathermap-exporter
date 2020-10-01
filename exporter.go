@@ -14,29 +14,19 @@ import (
 var (
 	labels = []string{"location_id", "location_name", "location_country", "latitude", "longitude"}
 
-	cloudinessPercent        = prometheus.NewDesc("weather_cloudiness_percent", "Cloud cover in percentage", labels, nil)
-	feelslikeCelsius         = prometheus.NewDesc("weather_feelslike_celsius", "Current temperature taking human perception into account, in celsius", labels, nil)
-	feelslikeFahrenheit      = prometheus.NewDesc("weather_feelslike_fahrenheit", "Current temperature taking human perception into account, in fahrenheit", labels, nil)
-	feelslikeKelvin          = prometheus.NewDesc("weather_feelslike_kelvin", "Current temperature taking human perception into account, in kelvin", labels, nil)
-	humidityPercent          = prometheus.NewDesc("weather_humidity_percent", "Humidity in percent", labels, nil)
-	maxTemperatureCelsius    = prometheus.NewDesc("weather_maxtemperature_celsius", "Current maximum temperature in celsius", labels, nil)
-	maxTemperatureFahrenheit = prometheus.NewDesc("weather_maxtemperature_fahrenheit", "Current maximum temperature in fahrenheit", labels, nil)
-	maxTemperatureKelvin     = prometheus.NewDesc("weather_maxtemperature_kelvin", "Current maximum temperature in kelvin", labels, nil)
-	minTemperatureCelsius    = prometheus.NewDesc("weather_mintemperature_celsius", "Current minimum temperature in celsius", labels, nil)
-	minTemperatureFahrenheit = prometheus.NewDesc("weather_mintemperature_fahrenheit", "Current minimum temperature in fahrenheit", labels, nil)
-	minTemperatureKelvin     = prometheus.NewDesc("weather_mintemperature_kelvin", "Current minimum temperature in kelvin", labels, nil)
-	pressureHpa              = prometheus.NewDesc("weather_pressure_hpa", "Atmospheric pressure in hectopascal", labels, nil)
-	sunrise                  = prometheus.NewDesc("weather_sunrise", "Sunrise time as a UNIX timestamp", labels, nil)
-	sunset                   = prometheus.NewDesc("weather_sunset", "Sunset time as a UNIX timestamp", labels, nil)
-	temperatureCelsius       = prometheus.NewDesc("weather_temperature_celsius", "Current temperature in celsius", labels, nil)
-	temperatureFahrenheit    = prometheus.NewDesc("weather_temperature_fahrenheit", "Current temperature in fahrenheit", labels, nil)
-	temperatureKelvin        = prometheus.NewDesc("weather_temperature_kelvin", "Current temperature in kelvin", labels, nil)
-	up                       = prometheus.NewDesc("weather_up", "Whether the metrics can be collected", nil, nil)
-	visibilityMeters         = prometheus.NewDesc("weather_visibility_meters", "Visibility in meters", labels, nil)
-	visibilityMiles          = prometheus.NewDesc("weather_visibility_miles", "Visibility in miles", labels, nil)
-	windDirection            = prometheus.NewDesc("weather_winddirection", "Wind direction in degrees", labels, nil)
-	windspeedMph             = prometheus.NewDesc("weather_windspeed_mph", "Wind speed in miles per hour", labels, nil)
-	windspeedMps             = prometheus.NewDesc("weather_windspeed_mps", "Wind speed in meters per second", labels, nil)
+	cloudiness     = prometheus.NewDesc("weather_cloudiness_percent", "Cloud cover in percentage", labels, nil)
+	feelslike      = prometheus.NewDesc("weather_feelslike_celsius", "Current temperature taking human perception into account, in celsius", labels, nil)
+	humidity       = prometheus.NewDesc("weather_humidity_percent", "Humidity in percent", labels, nil)
+	pressure       = prometheus.NewDesc("weather_pressure_hpa", "Atmospheric pressure in hectopascal", labels, nil)
+	sunrise        = prometheus.NewDesc("weather_sunrise_timestamp", "Sunrise time as a UNIX timestamp", labels, nil)
+	sunset         = prometheus.NewDesc("weather_sunset_timestamp", "Sunset time as a UNIX timestamp", labels, nil)
+	temperature    = prometheus.NewDesc("weather_temperature_celsius", "Current temperature in celsius", labels, nil)
+	temperatureMax = prometheus.NewDesc("weather_temperature_max_celsius", "Current maximum temperature in celsius", labels, nil)
+	temperatureMin = prometheus.NewDesc("weather_temperature_min_celsius", "Current minimum temperature in celsius", labels, nil)
+	up             = prometheus.NewDesc("weather_up", "Whether the metrics can be collected", nil, nil)
+	visibility     = prometheus.NewDesc("weather_visibility_meters", "Visibility in meters", labels, nil)
+	windDirection  = prometheus.NewDesc("weather_winddirection_degrees", "Wind direction in degrees", labels, nil)
+	windSpeed      = prometheus.NewDesc("weather_windspeed_mps", "Wind speed in meters per second", labels, nil)
 )
 
 type Exporter struct {
@@ -52,29 +42,19 @@ func newExporter(apikey string, cityIds string) *Exporter {
 }
 
 func (exporter *Exporter) Describe(channel chan<- *prometheus.Desc) {
-	channel <- cloudinessPercent
-	channel <- feelslikeCelsius
-	channel <- feelslikeFahrenheit
-	channel <- feelslikeKelvin
-	channel <- humidityPercent
-	channel <- maxTemperatureCelsius
-	channel <- maxTemperatureFahrenheit
-	channel <- maxTemperatureKelvin
-	channel <- minTemperatureCelsius
-	channel <- minTemperatureFahrenheit
-	channel <- minTemperatureKelvin
-	channel <- pressureHpa
+	channel <- cloudiness
+	channel <- feelslike
+	channel <- humidity
+	channel <- pressure
 	channel <- sunrise
 	channel <- sunset
-	channel <- temperatureCelsius
-	channel <- temperatureFahrenheit
-	channel <- temperatureKelvin
+	channel <- temperature
+	channel <- temperatureMax
+	channel <- temperatureMin
 	channel <- up
-	channel <- visibilityMeters
-	channel <- visibilityMiles
+	channel <- visibility
 	channel <- windDirection
-	channel <- windspeedMph
-	channel <- windspeedMps
+	channel <- windSpeed
 }
 
 func (exporter *Exporter) Collect(channel chan<- prometheus.Metric) {
@@ -91,33 +71,23 @@ func (exporter *Exporter) Collect(channel chan<- prometheus.Metric) {
 		latitude := fmt.Sprintf("%f", location.Coordinates.Latitude)
 		longitude := fmt.Sprintf("%f", location.Coordinates.Longitude)
 
-		channel <- prometheus.MustNewConstMetric(cloudinessPercent, prometheus.GaugeValue, location.Clouds.CoverPercentage, locationID, location.Name, location.Sys.Country, latitude, longitude)
-		channel <- prometheus.MustNewConstMetric(feelslikeCelsius, prometheus.GaugeValue, kelvinToCelsius(location.Main.FeelsLikeKelvin), locationID, location.Name, location.Sys.Country, latitude, longitude)
-		channel <- prometheus.MustNewConstMetric(feelslikeFahrenheit, prometheus.GaugeValue, kelvinToFahrenheit(location.Main.FeelsLikeKelvin), locationID, location.Name, location.Sys.Country, latitude, longitude)
-		channel <- prometheus.MustNewConstMetric(feelslikeKelvin, prometheus.GaugeValue, location.Main.FeelsLikeKelvin, locationID, location.Name, location.Sys.Country, latitude, longitude)
-		channel <- prometheus.MustNewConstMetric(humidityPercent, prometheus.GaugeValue, location.Main.HumidityPercent, locationID, location.Name, location.Sys.Country, latitude, longitude)
-		channel <- prometheus.MustNewConstMetric(maxTemperatureCelsius, prometheus.GaugeValue, kelvinToCelsius(location.Main.TemperatureMaxKelvin), locationID, location.Name, location.Sys.Country, latitude, longitude)
-		channel <- prometheus.MustNewConstMetric(maxTemperatureFahrenheit, prometheus.GaugeValue, kelvinToFahrenheit(location.Main.TemperatureMaxKelvin), locationID, location.Name, location.Sys.Country, latitude, longitude)
-		channel <- prometheus.MustNewConstMetric(maxTemperatureKelvin, prometheus.GaugeValue, location.Main.TemperatureMaxKelvin, locationID, location.Name, location.Sys.Country, latitude, longitude)
-		channel <- prometheus.MustNewConstMetric(minTemperatureCelsius, prometheus.GaugeValue, kelvinToCelsius(location.Main.TemperatureMinKelvin), locationID, location.Name, location.Sys.Country, latitude, longitude)
-		channel <- prometheus.MustNewConstMetric(minTemperatureFahrenheit, prometheus.GaugeValue, kelvinToFahrenheit(location.Main.TemperatureMinKelvin), locationID, location.Name, location.Sys.Country, latitude, longitude)
-		channel <- prometheus.MustNewConstMetric(minTemperatureKelvin, prometheus.GaugeValue, location.Main.TemperatureMinKelvin, locationID, location.Name, location.Sys.Country, latitude, longitude)
-		channel <- prometheus.MustNewConstMetric(pressureHpa, prometheus.GaugeValue, location.Main.PressureHpa, locationID, location.Name, location.Sys.Country, latitude, longitude)
+		channel <- prometheus.MustNewConstMetric(cloudiness, prometheus.GaugeValue, location.Clouds.Cover, locationID, location.Name, location.Sys.Country, latitude, longitude)
+		channel <- prometheus.MustNewConstMetric(feelslike, prometheus.GaugeValue, location.Main.FeelsLike, locationID, location.Name, location.Sys.Country, latitude, longitude)
+		channel <- prometheus.MustNewConstMetric(humidity, prometheus.GaugeValue, location.Main.Humidity, locationID, location.Name, location.Sys.Country, latitude, longitude)
+		channel <- prometheus.MustNewConstMetric(pressure, prometheus.GaugeValue, location.Main.Pressure, locationID, location.Name, location.Sys.Country, latitude, longitude)
 		channel <- prometheus.MustNewConstMetric(sunrise, prometheus.GaugeValue, location.Sys.Sunrise, locationID, location.Name, location.Sys.Country, latitude, longitude)
 		channel <- prometheus.MustNewConstMetric(sunset, prometheus.GaugeValue, location.Sys.Sunset, locationID, location.Name, location.Sys.Country, latitude, longitude)
-		channel <- prometheus.MustNewConstMetric(temperatureCelsius, prometheus.GaugeValue, kelvinToCelsius(location.Main.TemperatureKelvin), locationID, location.Name, location.Sys.Country, latitude, longitude)
-		channel <- prometheus.MustNewConstMetric(temperatureFahrenheit, prometheus.GaugeValue, kelvinToFahrenheit(location.Main.TemperatureKelvin), locationID, location.Name, location.Sys.Country, latitude, longitude)
-		channel <- prometheus.MustNewConstMetric(temperatureKelvin, prometheus.GaugeValue, location.Main.TemperatureKelvin, locationID, location.Name, location.Sys.Country, latitude, longitude)
-		channel <- prometheus.MustNewConstMetric(visibilityMeters, prometheus.GaugeValue, location.Visibility, locationID, location.Name, location.Sys.Country, latitude, longitude)
-		channel <- prometheus.MustNewConstMetric(visibilityMiles, prometheus.GaugeValue, metersToMiles(location.Visibility), locationID, location.Name, location.Sys.Country, latitude, longitude)
-		channel <- prometheus.MustNewConstMetric(windDirection, prometheus.GaugeValue, location.Wind.DirectionDegrees, locationID, location.Name, location.Sys.Country, latitude, longitude)
-		channel <- prometheus.MustNewConstMetric(windspeedMph, prometheus.GaugeValue, meterPerSecondToMilesPerHour(location.Wind.SpeedMps), locationID, location.Name, location.Sys.Country, latitude, longitude)
-		channel <- prometheus.MustNewConstMetric(windspeedMps, prometheus.GaugeValue, location.Wind.SpeedMps, locationID, location.Name, location.Sys.Country, latitude, longitude)
+		channel <- prometheus.MustNewConstMetric(temperature, prometheus.GaugeValue, location.Main.Temperature, locationID, location.Name, location.Sys.Country, latitude, longitude)
+		channel <- prometheus.MustNewConstMetric(temperatureMax, prometheus.GaugeValue, location.Main.TemperatureMax, locationID, location.Name, location.Sys.Country, latitude, longitude)
+		channel <- prometheus.MustNewConstMetric(temperatureMin, prometheus.GaugeValue, location.Main.TemperatureMin, locationID, location.Name, location.Sys.Country, latitude, longitude)
+		channel <- prometheus.MustNewConstMetric(visibility, prometheus.GaugeValue, location.Visibility, locationID, location.Name, location.Sys.Country, latitude, longitude)
+		channel <- prometheus.MustNewConstMetric(windDirection, prometheus.GaugeValue, location.Wind.Direction, locationID, location.Name, location.Sys.Country, latitude, longitude)
+		channel <- prometheus.MustNewConstMetric(windSpeed, prometheus.GaugeValue, location.Wind.Speed, locationID, location.Name, location.Sys.Country, latitude, longitude)
 	}
 }
 
 func (exporter *Exporter) getData() response {
-	resp, err := http.Get(fmt.Sprintf("https://api.openweathermap.org/data/2.5/group?id=%s&appid=%s", exporter.cityIds, exporter.apikey))
+	resp, err := http.Get(fmt.Sprintf("https://api.openweathermap.org/data/2.5/group?units=metric&id=%s&appid=%s", exporter.cityIds, exporter.apikey))
 	if err != nil {
 		log.Println("Request to OpenWeatherMap failed:", err)
 		return response{}
@@ -144,20 +114,4 @@ func (exporter *Exporter) getData() response {
 	}
 
 	return data
-}
-
-func kelvinToCelsius(temp float64) float64 {
-	return temp - 273.15
-}
-
-func kelvinToFahrenheit(temp float64) float64 {
-	return kelvinToCelsius(temp)*9/5 + 32
-}
-
-func meterPerSecondToMilesPerHour(speed float64) float64 {
-	return speed * 2.237
-}
-
-func metersToMiles(distance float64) float64 {
-	return distance * 0.00062137
 }
