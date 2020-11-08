@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -30,14 +31,18 @@ var (
 )
 
 type Exporter struct {
-	apikey  string
-	cityIds string
+	apikey          string
+	cityIds         string
+	cacheTTL        time.Duration
+	cachedResponse  response
+	responseFetched time.Time
 }
 
-func newExporter(apikey string, cityIds string) *Exporter {
+func newExporter(apikey string, cityIds string, cacheTTL time.Duration) *Exporter {
 	return &Exporter{
-		apikey:  apikey,
-		cityIds: cityIds,
+		apikey:   apikey,
+		cityIds:  cityIds,
+		cacheTTL: cacheTTL,
 	}
 }
 
@@ -87,6 +92,10 @@ func (exporter *Exporter) Collect(channel chan<- prometheus.Metric) {
 }
 
 func (exporter *Exporter) getData() response {
+	if time.Since(exporter.responseFetched) < exporter.cacheTTL {
+		return exporter.cachedResponse
+	}
+
 	resp, err := http.Get(fmt.Sprintf("https://api.openweathermap.org/data/2.5/group?units=metric&id=%s&appid=%s", exporter.cityIds, exporter.apikey))
 	if err != nil {
 		log.Println("Request to OpenWeatherMap failed:", err)
@@ -112,6 +121,9 @@ func (exporter *Exporter) getData() response {
 		log.Println("Parsing JSON response failed:", err)
 		return response{}
 	}
+
+	exporter.cachedResponse = data
+	exporter.responseFetched = time.Now()
 
 	return data
 }

@@ -46,6 +46,8 @@ The following configuration flags are available:
     Usage of openweathermap-exporter:
       -apikey string
             API key for OpenWeatherMap (required)
+      -cache-ttl string
+            TTL for API response cache (default "10m")
       -listen-address string
             Hostname and port to listen on (default "localhost:9755")
       -location-ids string
@@ -54,9 +56,8 @@ The following configuration flags are available:
 You can look up the location IDs on the [OpenWeatherMap website](https://openweathermap.org/find).
 
 
-## Note
+## Note about the response cache
 
-The exporter makes an API request to OpenWeatherMap every time the `/metrics` endpoint is requested.
-This allows you to control how often the data is fetched from them.
-Be aware that they [specifically say](https://openweathermap.org/appid#work) that weather data isn't updated more often than every 10 minutes,
-so it likely won't make sense to request it more often than that.
+OpenWeatherMap [specifically say](https://openweathermap.org/appid#work) the weather data isn't updated more often than every 10 minutes,
+so the API responses are cached for 10 minutes by default.
+This allow Prometheus to scrape the exporter more often than without using up your API quota.
